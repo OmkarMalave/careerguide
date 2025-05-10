@@ -1,7 +1,7 @@
 {
   "name": "career-stop-server",
   "version": "1.0.0",
-  "description": "Backend for Career Stop - A career guidance platform",
+  "description": "Backend server for Career Stop application",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -25,7 +25,9 @@
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.0",
-    "mongoose": "^7.0.3"
+    "mongoose": "^7.0.3",
+    "morgan": "^1.10.0",
+    "validator": "^13.9.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.22"

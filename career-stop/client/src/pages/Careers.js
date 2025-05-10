@@ -9,6 +9,8 @@ const Careers = () => {
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [webResults, setWebResults] = useState([]);
+  const [isSearchingWeb, setIsSearchingWeb] = useState(false);
 
   useEffect(() => {
     const fetchCareers = async () => {
@@ -38,8 +40,6 @@ const Careers = () => {
         return matchesSearch;
       }
       
-      // This is a simplified example. In a real app, you would have proper categories
-      // For now, we'll just filter based on some keywords in the description
       const categoryKeywords = {
         'technology': ['software', 'developer', 'engineer', 'tech', 'computer', 'data'],
         'healthcare': ['health', 'medical', 'doctor', 'nurse', 'patient', 'care'],
@@ -58,7 +58,26 @@ const Careers = () => {
     });
     
     setFilteredCareers(filtered);
+
+    // If no results found in database and search term exists, search the web
+    if (filtered.length === 0 && searchTerm.trim() !== '') {
+      searchWeb();
+    } else {
+      setWebResults([]);
+    }
   }, [searchTerm, selectedCategory, careers]);
+
+  const searchWeb = async () => {
+    try {
+      setIsSearchingWeb(true);
+      const response = await careerAPI.searchWebCareers(searchTerm);
+      setWebResults(response.data.results || []);
+    } catch (err) {
+      console.error('Error searching web:', err);
+    } finally {
+      setIsSearchingWeb(false);
+    }
+  };
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
@@ -155,7 +174,7 @@ const Careers = () => {
                   </div>
                 </div>
                 <div className="text-sm text-gray-600 mb-4">
-                  <p><span className="font-medium">Education:</span> {career.educationRequirements}</p>
+                  <p><span className="font-medium">Education:</span> {career.education}</p>
                   <p><span className="font-medium">Avg. Salary:</span> {career.averageSalary}</p>
                 </div>
                 <Link
@@ -168,17 +187,47 @@ const Careers = () => {
             </div>
           ))
         ) : (
-          <div className="col-span-full text-center py-12">
-            <p className="text-gray-600 mb-4">No careers found matching your criteria.</p>
-            <button
-              onClick={() => {
-                setSearchTerm('');
-                setSelectedCategory('all');
-              }}
-              className="btn btn-outline"
-            >
-              Clear Filters
-            </button>
+          <div className="col-span-full">
+            {isSearchingWeb ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-600 mx-auto mb-4"></div>
+                <p className="text-gray-600">Searching the web for career information...</p>
+              </div>
+            ) : webResults.length > 0 ? (
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 mb-4">Web Search Results</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {webResults.map((result, index) => (
+                    <div key={index} className="bg-white shadow rounded-lg p-6">
+                      <h3 className="text-lg font-bold text-gray-900 mb-2">{result.title}</h3>
+                      <p className="text-gray-600 mb-4">{result.description}</p>
+                      <a
+                        href={result.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary-600 hover:text-primary-700 font-medium"
+                      >
+                        Learn More
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-gray-600 mb-4">No careers found matching your criteria.</p>
+                <button
+                  onClick={() => {
+                    setSearchTerm('');
+                    setSelectedCategory('all');
+                    setWebResults([]);
+                  }}
+                  className="btn btn-outline"
+                >
+                  Clear Filters
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

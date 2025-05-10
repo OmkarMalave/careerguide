@@ -1,5 +1,7 @@
 const Career = require('../models/Career');
 const User = require('../models/User');
+const asyncHandler = require('../middleware/async');
+const ErrorResponse = require('../utils/errorResponse');
 
 // @desc    Get all careers
 // @route   GET /api/careers
@@ -143,4 +145,45 @@ exports.getSelectedCareers = async (req, res) => {
       error: error.message
     });
   }
-}; 
+};
+
+// @desc    Search for careers on the web
+// @route   GET /api/v1/careers/web-search
+// @access  Public
+exports.searchWebCareers = asyncHandler(async (req, res, next) => {
+  const query = req.query.q;
+  
+  if (!query) {
+    return next(new ErrorResponse('Please provide a search query', 400));
+  }
+
+  try {
+    // Use web search API to find career information
+    const searchResults = await fetch(`https://api.bing.microsoft.com/v7.0/search?q=${encodeURIComponent(query)}+career+information`, {
+      headers: {
+        'Ocp-Apim-Subscription-Key': process.env.BING_API_KEY
+      }
+    });
+
+    const data = await searchResults.json();
+
+    // Format the results
+    const formattedResults = data.webPages.value.map(result => ({
+      title: result.name,
+      description: result.snippet,
+      link: result.url
+    }));
+
+    res.status(200).json({
+      success: true,
+      results: formattedResults.slice(0, 6) // Return top 6 results
+    });
+  } catch (error) {
+    // If web search fails, return empty results
+    console.error('Web search error:', error);
+    res.status(200).json({
+      success: true,
+      results: []
+    });
+  }
+}); 

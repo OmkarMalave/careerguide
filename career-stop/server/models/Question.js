@@ -9,7 +9,7 @@ const QuestionSchema = new mongoose.Schema({
   category: {
     type: String,
     required: [true, 'Please provide a category'],
-    enum: ['interests', 'skills', 'personality'], 
+    enum: ['interests', 'skills', 'personality', 'values'],
     trim: true
   },
   options: [{

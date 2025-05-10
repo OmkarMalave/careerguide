@@ -1,0 +1,17 @@
+{
+    "name": "career-stop",
+    "version": "1.0.0",
+    "description": "Career guidance and recommendation system",
+    "scripts": {
+        "start": "concurrently \"cd career-stop/server && npm start\" \"cd career-stop/client && npm start\"",
+        "install-all": "npm install && cd career-stop/server && npm install && cd ../client && npm install",
+        "dev": "concurrently \"cd career-stop/server && npm run dev\" \"cd career-stop/client && npm start\""
+    },
+    "devDependencies": {
+        "concurrently": "^8.2.2"
+    },
+    "main": "index.js",
+    "keywords": [],
+    "author": "",
+    "license": "ISC"
+}

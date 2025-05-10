@@ -9,7 +9,27 @@ const PsychometricTest = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [educationLevel, setEducationLevel] = useState('');
+  const [showEducationSelection, setShowEducationSelection] = useState(true);
   const navigate = useNavigate();
+
+  const educationalLevels = [
+    {
+      level: '10th',
+      description: 'Currently in or completed 10th grade',
+      streams: ['Science', 'Commerce', 'Arts', 'Vocational']
+    },
+    {
+      level: '12th',
+      description: 'Currently in or completed 12th grade',
+      streams: ['Science (PCM)', 'Science (PCB)', 'Commerce', 'Arts/Humanities']
+    },
+    {
+      level: 'Graduate',
+      description: 'Completed undergraduate degree',
+      streams: ['Engineering', 'Medical', 'Commerce', 'Arts', 'Other']
+    }
+  ];
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -62,13 +82,21 @@ const PsychometricTest = () => {
 
     try {
       setSubmitting(true);
-      const response = await testAPI.submitTest(answers);
+      const response = await testAPI.submitTest({
+        answers,
+        educationLevel
+      });
       navigate('/test/results', { state: { testResult: response.data.data } });
     } catch (err) {
       console.error('Error submitting test:', err);
       setError('Failed to submit test. Please try again.');
       setSubmitting(false);
     }
+  };
+
+  const handleEducationLevelSelect = (level) => {
+    setEducationLevel(level);
+    setShowEducationSelection(false);
   };
 
   if (loading) {
@@ -86,6 +114,44 @@ const PsychometricTest = () => {
         <p className="text-lg text-gray-600 mb-8">
           No questions available at the moment. Please try again later.
         </p>
+      </div>
+    );
+  }
+
+  if (showEducationSelection) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <h1 className="text-3xl font-extrabold text-gray-900 mb-4 text-center">Select Your Education Level</h1>
+        <p className="text-lg text-gray-700 mb-8 text-center">
+          Please select your current education level to help us provide more relevant career recommendations.
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {educationalLevels.map((level) => (
+            <div
+              key={level.level}
+              className={`border-2 rounded-lg p-6 cursor-pointer transition-all hover:shadow-md ${
+                educationLevel === level.level
+                  ? 'border-primary-500 bg-primary-50'
+                  : 'border-gray-200 hover:border-primary-300 hover:bg-gray-50'
+              }`}
+              onClick={() => handleEducationLevelSelect(level.level)}
+            >
+              <h3 className="text-xl font-bold text-gray-900 mb-2">{level.level}</h3>
+              <p className="text-gray-600 mb-4">{level.description}</p>
+              <div className="flex flex-wrap gap-2">
+                {level.streams.map((stream) => (
+                  <span
+                    key={stream}
+                    className="bg-primary-50 text-primary-700 text-xs font-medium px-2.5 py-0.5 rounded-full"
+                  >
+                    {stream}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }

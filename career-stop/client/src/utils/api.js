@@ -60,6 +60,7 @@ export const careerAPI = {
   selectCareer: (id) => api.post(`/careers/${id}/select`),
   unselectCareer: (id) => api.delete(`/careers/${id}/select`),
   getSelectedCareers: () => api.get('/careers/selected'),
+  searchWebCareers: (query) => api.get(`/careers/web-search?q=${encodeURIComponent(query)}`),
 };
 
 // Recommendation API calls

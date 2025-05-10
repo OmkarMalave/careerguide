@@ -14,6 +14,7 @@ import TestResults from './pages/TestResults';
 import Careers from './pages/Careers';
 import CareerDetail from './pages/CareerDetail';
 import NotFound from './pages/NotFound';
+import CareerRecommendationMechanism from './pages/CareerRecommendationMechanism';
 
 function App() {
   return (
@@ -38,6 +39,7 @@ function App() {
             {/* 404 route */}
             <Route path="*" element={<NotFound />} />
           </Route>
+          <Route path="/how-it-works" element={<CareerRecommendationMechanism />} />
         </Routes>
       </Router>
     </AuthProvider>
