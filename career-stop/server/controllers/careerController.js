@@ -8,7 +8,7 @@ const ErrorResponse = require('../utils/errorResponse');
 // @access  Private
 exports.getCareers = async (req, res) => {
   try {
-    const careers = await Career.find();
+    const careers = await Career.find().sort({ createdAt: 1 });
     
     res.status(200).json({
       success: true,
@@ -29,20 +29,33 @@ exports.getCareers = async (req, res) => {
 // @access  Private
 exports.getCareer = async (req, res) => {
   try {
-    const career = await Career.findById(req.params.id);
+    console.log('Finding career with ID:', req.params.id);
+    
+    // Try to find by MongoDB ID first
+    let career = await Career.findById(req.params.id);
+    
+    // If not found by ID, try to find by title
+    if (!career) {
+      career = await Career.findOne({ 
+        title: { $regex: new RegExp(req.params.id.replace(/-/g, ' '), 'i') } 
+      });
+    }
     
     if (!career) {
+      console.log('Career not found');
       return res.status(404).json({
         success: false,
         message: 'Career not found'
       });
     }
     
+    console.log('Career found:', career);
     res.status(200).json({
       success: true,
       data: career
     });
   } catch (error) {
+    console.error('Error finding career:', error);
     res.status(500).json({
       success: false,
       message: 'Server Error',
@@ -131,14 +144,24 @@ exports.unselectCareer = async (req, res) => {
 // @access  Private
 exports.getSelectedCareers = async (req, res) => {
   try {
+    // Temporarily remove populate for debugging
     const user = await User.findById(req.user.id).populate('selectedCareers');
     
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
     res.status(200).json({
       success: true,
-      count: user.selectedCareers.length,
-      data: user.selectedCareers
+      // Adjust count and data if not populated, or send the raw IDs
+      count: user.selectedCareers ? user.selectedCareers.length : 0,
+      data: user.selectedCareers || [] // Send the array of ObjectIds
     });
   } catch (error) {
+    console.error('Error in getSelectedCareers:', error); // Added console.error for backend logging
     res.status(500).json({
       success: false,
       message: 'Server Error',

@@ -1,11 +1,27 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { authAPI } from '../utils/api';
 
-// Create the auth context
-const AuthContext = createContext();
+// Create the auth context with a default value
+const AuthContext = createContext({
+  user: null,
+  token: null,
+  loading: true,
+  error: null,
+  isAuthenticated: false,
+  register: async () => {},
+  login: async () => {},
+  logout: () => {},
+  updateProfile: () => {}
+});
 
 // Custom hook to use the auth context
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
 
 // Auth provider component
 export const AuthProvider = ({ children }) => {

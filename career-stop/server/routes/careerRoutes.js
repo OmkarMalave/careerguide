@@ -5,18 +5,19 @@ const {
   getCareer, 
   selectCareer, 
   unselectCareer, 
-  getSelectedCareers 
+  getSelectedCareers,
+  searchWebCareers
 } = require('../controllers/careerController');
 const { protect } = require('../middleware/auth');
 
-// Apply protection middleware to all routes
-router.use(protect);
-
-// Career routes
+// Public routes
 router.get('/', getCareers);
-router.get('/selected', getSelectedCareers);
 router.get('/:id', getCareer);
-router.post('/:id/select', selectCareer);
-router.delete('/:id/select', unselectCareer);
+router.get('/web-search', searchWebCareers);
+
+// Protected routes
+router.post('/:id/select', protect, selectCareer);
+router.delete('/:id/select', protect, unselectCareer);
+router.get('/selected', protect, getSelectedCareers);
 
 module.exports = router; 

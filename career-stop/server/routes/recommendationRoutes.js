@@ -5,14 +5,18 @@ const {
   getCareerBookRecommendations,
   getCareerCourseRecommendations,
   getCareerCollegeRecommendations,
-  getCareerArticleRecommendations
+  getCareerArticleRecommendations,
+  getPersonalizedRecommendations
 } = require('../controllers/recommendationController');
 const { protect } = require('../middleware/auth');
 
 // Apply protection middleware to all routes
 router.use(protect);
 
-// Recommendation routes
+// Personalized recommendations
+router.get('/personalized', getPersonalizedRecommendations);
+
+// Career-specific recommendations
 router.get('/career/:id', getCareerRecommendations);
 router.get('/career/:id/books', getCareerBookRecommendations);
 router.get('/career/:id/courses', getCareerCourseRecommendations);

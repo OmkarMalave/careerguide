@@ -1,23 +1,22 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const Register = () => {
+  const navigate = useNavigate();
+  const { register } = useAuth();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
-    confirmPassword: '',
+    confirmPassword: ''
   });
   const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const { register } = useAuth();
-  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [e.target.name]: e.target.value
     });
   };
 
@@ -25,163 +24,116 @@ const Register = () => {
     e.preventDefault();
     setError('');
 
-    // Validate form
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       return;
     }
 
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters');
-      return;
-    }
-
-    setIsLoading(true);
-
     try {
-      const { name, email, password } = formData;
-      const result = await register({ name, email, password });
-
+      const { confirmPassword, ...registerData } = formData;
+      const result = await register(registerData);
       if (result.success) {
         navigate('/dashboard');
       } else {
-        setError(result.error || 'Registration failed. Please try again.');
+        setError(result.error);
       }
     } catch (err) {
-      setError('An unexpected error occurred. Please try again.');
-      console.error('Registration error:', err);
-    } finally {
-      setIsLoading(false);
+      setError('An error occurred during registration');
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Create a new account
-        </h2>
-        <p className="mt-2 text-center text-base text-gray-600">
-          Or{' '}
-          <Link
-            to="/login"
-            className="font-medium text-primary-600 hover:text-primary-500 underline"
-          >
-            sign in to your existing account
-          </Link>
-        </p>
-      </div>
-
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+    <div className="min-h-screen bg-theme-bg-dark text-theme-text-DEFAULT flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold">
+            Create your account
+          </h2>
+          <p className="mt-2 text-center text-sm text-theme-text-muted">
+            Already have an account?{' '}
+            <Link to="/login" className="font-medium text-primary-400 hover:text-primary-300">
+              Sign in
+            </Link>
+          </p>
+        </div>
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
-            <div className="mb-4 bg-red-50 border-l-4 border-red-500 p-4 text-red-700 font-medium">
-              <p>{error}</p>
+            <div className="bg-error-light text-error-DEFAULT p-3 rounded-md text-sm">
+              {error}
             </div>
           )}
-          <form className="space-y-6" onSubmit={handleSubmit}>
+          <div className="rounded-md shadow-sm -space-y-px">
             <div>
-              <label
-                htmlFor="name"
-                className="block text-sm font-bold text-gray-700"
-              >
+              <label htmlFor="name" className="sr-only">
                 Full Name
               </label>
-              <div className="mt-1">
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  autoComplete="name"
-                  required
-                  value={formData.name}
-                  onChange={handleChange}
-                  className="form-input shadow-sm"
-                  placeholder="Enter your full name"
-                />
-              </div>
+              <input
+                id="name"
+                name="name"
+                type="text"
+                required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-theme-border-DEFAULT placeholder-theme-text-muted text-theme-text-DEFAULT rounded-t-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm bg-theme-bg-light"
+                placeholder="Full Name"
+                value={formData.name}
+                onChange={handleChange}
+              />
             </div>
-
             <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-bold text-gray-700"
-              >
+              <label htmlFor="email" className="sr-only">
                 Email address
               </label>
-              <div className="mt-1">
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="form-input shadow-sm"
-                  placeholder="Enter your email"
-                />
-              </div>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-theme-border-DEFAULT placeholder-theme-text-muted text-theme-text-DEFAULT focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm bg-theme-bg-light"
+                placeholder="Email address"
+                value={formData.email}
+                onChange={handleChange}
+              />
             </div>
-
             <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-bold text-gray-700"
-              >
+              <label htmlFor="password" className="sr-only">
                 Password
               </label>
-              <div className="mt-1">
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="new-password"
-                  required
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="form-input shadow-sm"
-                  placeholder="Create a password"
-                />
-              </div>
-              <p className="mt-1 text-sm text-gray-500 font-medium">
-                Password must be at least 6 characters long
-              </p>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-theme-border-DEFAULT placeholder-theme-text-muted text-theme-text-DEFAULT focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm bg-theme-bg-light"
+                placeholder="Password"
+                value={formData.password}
+                onChange={handleChange}
+              />
             </div>
-
             <div>
-              <label
-                htmlFor="confirmPassword"
-                className="block text-sm font-bold text-gray-700"
-              >
+              <label htmlFor="confirmPassword" className="sr-only">
                 Confirm Password
               </label>
-              <div className="mt-1">
-                <input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type="password"
-                  autoComplete="new-password"
-                  required
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  className="form-input shadow-sm"
-                  placeholder="Confirm your password"
-                />
-              </div>
+              <input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-theme-border-DEFAULT placeholder-theme-text-muted text-theme-text-DEFAULT rounded-b-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm bg-theme-bg-light"
+                placeholder="Confirm Password"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+              />
             </div>
+          </div>
 
-            <div>
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
-              >
-                {isLoading ? 'Creating account...' : 'Create account'}
-              </button>
-            </div>
-          </form>
-        </div>
+          <div>
+            <button
+              type="submit"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+            >
+              Create Account
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

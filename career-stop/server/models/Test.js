@@ -18,31 +18,14 @@ const TestSchema = new mongoose.Schema({
     },
     category: {
       type: String,
-      enum: ['interests', 'personality', 'skills', 'values'],
+      enum: ['interests', 'personality', 'skills', 'values', 'workStyle'],
       required: true
     }
   }],
   scores: {
-    interests: {
-      analytical: { type: Number, min: 0, max: 10 },
-      creative: { type: Number, min: 0, max: 10 },
-      social: { type: Number, min: 0, max: 10 }
-    },
-    personality: {
-      structured: { type: Number, min: 0, max: 10 },
-      independent: { type: Number, min: 0, max: 10 },
-      teamwork: { type: Number, min: 0, max: 10 }
-    },
-    skills: {
-      technical: { type: Number, min: 0, max: 10 },
-      communication: { type: Number, min: 0, max: 10 },
-      creative: { type: Number, min: 0, max: 10 }
-    },
-    values: {
-      security: { type: Number, min: 0, max: 10 },
-      growth: { type: Number, min: 0, max: 10 },
-      balance: { type: Number, min: 0, max: 10 }
-    }
+    totalUserScore: { type: Number, required: true },
+    numberOfQuestionsAnswered: { type: Number, required: true },
+    userPercentageScore: { type: Number, required: true }
   },
   educationLevel: {
     type: String,

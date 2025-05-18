@@ -8,11 +8,11 @@ const {
 } = require('../controllers/testController');
 const { protect } = require('../middleware/auth');
 
-// Apply protection middleware to all routes
-router.use(protect);
-
-// Test routes
+// Public routes
 router.get('/questions', getQuestions);
+
+// Protected routes
+router.use(protect);
 router.post('/submit', submitTest);
 router.get('/results', getResults);
 router.get('/results/:id', getTestResult);

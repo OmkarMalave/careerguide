@@ -26,12 +26,13 @@ function App() {
             <Route index element={<Home />} />
             <Route path="login" element={<Login />} />
             <Route path="register" element={<Register />} />
+            <Route path="test" element={<PsychometricTest />} />
             
             {/* Protected routes */}
             <Route element={<ProtectedRoute />}>
               <Route path="dashboard" element={<Dashboard />} />
-              <Route path="test" element={<PsychometricTest />} />
               <Route path="test/results" element={<TestResults />} />
+              <Route path="test/results/:id" element={<TestResults />} />
               <Route path="careers" element={<Careers />} />
               <Route path="careers/:id" element={<CareerDetail />} />
             </Route>

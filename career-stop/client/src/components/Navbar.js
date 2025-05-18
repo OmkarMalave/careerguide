@@ -13,19 +13,19 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-white shadow-md">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex">
+    <nav className="bg-theme-bg-light shadow-md w-full">
+      <div className="max-w-[1920px] mx-auto px-6 sm:px-8 lg:px-12">
+        <div className="flex justify-between h-20">
+          <div className="flex items-center space-x-8">
             <div className="flex-shrink-0 flex items-center">
-              <Link to="/" className="text-2xl font-bold text-primary-600">
-              CareerCompass
+              <Link to="/" className="text-2xl font-bold text-primary-300">
+                CareerCompass
               </Link>
             </div>
-            <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
+            <div className="hidden md:flex space-x-8">
               <Link
                 to="/"
-                className="border-transparent text-gray-500 hover:border-primary-500 hover:text-primary-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                className="border-transparent text-theme-text-DEFAULT hover:border-primary-400 hover:text-primary-300 inline-flex items-center px-3 pt-1 border-b-2 text-base font-medium"
               >
                 Home
               </Link>
@@ -33,19 +33,19 @@ const Navbar = () => {
                 <>
                   <Link
                     to="/test"
-                    className="border-transparent text-gray-500 hover:border-primary-500 hover:text-primary-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                    className="border-transparent text-theme-text-DEFAULT hover:border-primary-400 hover:text-primary-300 inline-flex items-center px-3 pt-1 border-b-2 text-base font-medium"
                   >
                     Psychometric Test
                   </Link>
                   <Link
                     to="/careers"
-                    className="border-transparent text-gray-500 hover:border-primary-500 hover:text-primary-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                    className="border-transparent text-theme-text-DEFAULT hover:border-primary-400 hover:text-primary-300 inline-flex items-center px-3 pt-1 border-b-2 text-base font-medium"
                   >
                     Careers
                   </Link>
                   <Link
                     to="/dashboard"
-                    className="border-transparent text-gray-500 hover:border-primary-500 hover:text-primary-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                    className="border-transparent text-theme-text-DEFAULT hover:border-primary-400 hover:text-primary-300 inline-flex items-center px-3 pt-1 border-b-2 text-base font-medium"
                   >
                     Dashboard
                   </Link>
@@ -53,36 +53,34 @@ const Navbar = () => {
               )}
             </div>
           </div>
-          <div className="hidden sm:ml-6 sm:flex sm:items-center">
+          
+          <div className="flex items-center space-x-6">
             {isAuthenticated ? (
-              <div className="ml-3 relative">
-                <div className="flex items-center space-x-4">
-                  <span className="text-sm font-medium text-gray-700">
-                    Hello, {user?.name}
-                  </span>
-                  <button
-                    onClick={handleLogout}
-                    className="btn btn-outline text-sm"
-                  >
-                    Logout
-                  </button>
-                </div>
+              <div className="flex items-center space-x-6">
+                <span className="text-base font-medium text-theme-text-DEFAULT">
+                  Hello, {user?.name}
+                </span>
+                <button
+                  onClick={handleLogout}
+                  className="btn btn-outline text-base px-6"
+                >
+                  Logout
+                </button>
               </div>
             ) : (
-              <div className="flex space-x-4">
-                <Link to="/login" className="btn btn-outline text-sm">
+              <div className="flex space-x-6">
+                <Link to="/login" className="btn btn-outline text-base px-6">
                   Login
                 </Link>
-                <Link to="/register" className="btn btn-primary text-sm">
+                <Link to="/register" className="btn btn-primary text-base px-6">
                   Register
                 </Link>
               </div>
             )}
-          </div>
-          <div className="-mr-2 flex items-center sm:hidden">
+            
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500"
+              className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-primary-300 hover:text-primary-200 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500"
             >
               <span className="sr-only">Open main menu</span>
               {isMenuOpen ? (
@@ -125,11 +123,11 @@ const Navbar = () => {
 
       {/* Mobile menu */}
       {isMenuOpen && (
-        <div className="sm:hidden">
+        <div className="md:hidden bg-theme-bg-light border-t border-primary-700">
           <div className="pt-2 pb-3 space-y-1">
             <Link
               to="/"
-              className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-primary-500 hover:text-primary-700"
+              className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-theme-text-DEFAULT hover:bg-primary-700 hover:border-primary-400 hover:text-primary-300"
               onClick={() => setIsMenuOpen(false)}
             >
               Home
@@ -138,82 +136,26 @@ const Navbar = () => {
               <>
                 <Link
                   to="/test"
-                  className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-primary-500 hover:text-primary-700"
+                  className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-theme-text-DEFAULT hover:bg-primary-700 hover:border-primary-400 hover:text-primary-300"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Psychometric Test
                 </Link>
                 <Link
                   to="/careers"
-                  className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-primary-500 hover:text-primary-700"
+                  className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-theme-text-DEFAULT hover:bg-primary-700 hover:border-primary-400 hover:text-primary-300"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Careers
                 </Link>
                 <Link
                   to="/dashboard"
-                  className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-primary-500 hover:text-primary-700"
+                  className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-theme-text-DEFAULT hover:bg-primary-700 hover:border-primary-400 hover:text-primary-300"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Dashboard
                 </Link>
               </>
-            )}
-          </div>
-          <div className="pt-4 pb-3 border-t border-gray-200">
-            {isAuthenticated ? (
-              <div className="flex items-center px-4">
-                <div className="flex-shrink-0">
-                  <div className="h-10 w-10 rounded-full bg-primary-600 flex items-center justify-center text-white font-bold">
-                    {user?.name.charAt(0)}
-                  </div>
-                </div>
-                <div className="ml-3">
-                  <div className="text-base font-medium text-gray-800">
-                    {user?.name}
-                  </div>
-                  <div className="text-sm font-medium text-gray-500">
-                    {user?.email}
-                  </div>
-                </div>
-                <button
-                  onClick={handleLogout}
-                  className="ml-auto bg-white p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-                >
-                  <span className="sr-only">Logout</span>
-                  <svg
-                    className="h-6 w-6"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                    />
-                  </svg>
-                </button>
-              </div>
-            ) : (
-              <div className="flex justify-around">
-                <Link
-                  to="/login"
-                  className="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Login
-                </Link>
-                <Link
-                  to="/register"
-                  className="block px-4 py-2 text-base font-medium text-primary-600 hover:text-primary-800 hover:bg-gray-100"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Register
-                </Link>
-              </div>
             )}
           </div>
         </div>

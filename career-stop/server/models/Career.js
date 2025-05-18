@@ -18,112 +18,53 @@ const CareerSchema = new mongoose.Schema({
   }],
   educationRequirements: {
     type: String,
-    trim: true
+    required: true
   },
   averageSalary: {
     type: String,
-    trim: true
+    required: true
   },
   jobOutlook: {
     type: String,
-    trim: true
+    required: true
   },
   careerTraits: {
     type: Map,
     of: Number,
-    default: {}
+    required: true
   },
   books: [{
-    title: {
-      type: String,
-      required: true,
-      trim: true
-    },
-    author: {
-      type: String,
-      trim: true
-    },
-    link: {
-      type: String,
-      trim: true
-    },
-    description: {
-      type: String,
-      trim: true
-    }
+    title: { type: String, required: true },
+    author: { type: String, required: true },
+    description: { type: String, required: true },
+    link: { type: String, required: true }
   }],
   courses: [{
-    title: {
-      type: String,
-      required: true,
-      trim: true
-    },
-    provider: {
-      type: String,
-      trim: true
-    },
-    link: {
-      type: String,
-      trim: true
-    },
-    description: {
-      type: String,
-      trim: true
-    },
-    isOnline: {
-      type: Boolean,
-      default: true
-    }
+    title: { type: String, required: true },
+    provider: { type: String, required: true },
+    description: { type: String, required: true },
+    duration: { type: String, required: true },
+    isOnline: { type: Boolean, required: true },
+    link: { type: String, required: true }
   }],
   colleges: [{
-    name: {
-      type: String,
-      required: true,
-      trim: true
-    },
-    location: {
-      type: String,
-      trim: true
-    },
-    programs: [{
-      type: String,
-      trim: true
-    }],
-    link: {
-      type: String,
-      trim: true
-    },
-    description: {
-      type: String,
-      trim: true
-    }
-  }],
-  articles: [{
-    title: {
-      type: String,
-      required: true,
-      trim: true
-    },
-    author: {
-      type: String,
-      trim: true
-    },
-    link: {
-      type: String,
-      trim: true
-    },
-    description: {
-      type: String,
-      trim: true
-    },
-    publishedDate: {
-      type: Date
-    }
+    name: { type: String, required: true },
+    location: { type: String, required: true },
+    programs: [{ type: String }],
+    description: { type: String, required: true },
+    link: { type: String, required: false, default: '#' }
   }],
   createdAt: {
     type: Date,
     default: Date.now
   }
+}, {
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 });
+
+// Drop any existing indexes
+CareerSchema.index({ title: 1 }, { unique: true });
 
 module.exports = mongoose.model('Career', CareerSchema); 

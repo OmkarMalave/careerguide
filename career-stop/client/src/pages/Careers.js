@@ -17,8 +17,12 @@ const Careers = () => {
       try {
         setLoading(true);
         const response = await careerAPI.getCareers();
-        setCareers(response.data.data);
-        setFilteredCareers(response.data.data);
+        // Ensure no duplicates by using a Map with _id as key
+        const uniqueCareers = Array.from(
+          new Map(response.data.data.map(career => [career._id, career])).values()
+        );
+        setCareers(uniqueCareers);
+        setFilteredCareers(uniqueCareers);
         setLoading(false);
       } catch (err) {
         console.error('Error fetching careers:', err);
@@ -51,7 +55,9 @@ const Careers = () => {
       const matchesCategory = keywords.some(keyword => 
         career.title.toLowerCase().includes(keyword) || 
         career.description.toLowerCase().includes(keyword) ||
-        career.skills.some(skill => skill.toLowerCase().includes(keyword))
+        (career.traits?.skills && Object.keys(career.traits.skills).some(skill => 
+          skill.toLowerCase().includes(keyword)
+        ))
       );
       
       return matchesSearch && matchesCategory;
@@ -90,7 +96,7 @@ const Careers = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
       </div>
     );
   }
@@ -98,23 +104,22 @@ const Careers = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Explore Careers</h1>
-        <p className="mt-2 text-lg text-gray-600">
+        <h1>Explore Careers</h1>
+        <p className="mt-2 text-lg text-theme-text-DEFAULT">
           Browse through various career options and find detailed information about each one.
         </p>
       </div>
 
       {error && (
-        <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 text-red-700">
+        <div className="mb-6 bg-error-light border-l-4 border-error-DEFAULT p-4 text-error-dark font-medium">
           <p>{error}</p>
         </div>
       )}
 
-      {/* Search and Filter */}
-      <div className="bg-white shadow rounded-lg p-6 mb-8">
+      <div className="bg-theme-bg-light shadow rounded-lg p-6 mb-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="search" className="form-label">
               Search Careers
             </label>
             <input
@@ -127,7 +132,7 @@ const Careers = () => {
             />
           </div>
           <div>
-            <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="category" className="form-label">
               Filter by Category
             </label>
             <select
@@ -146,36 +151,43 @@ const Careers = () => {
         </div>
       </div>
 
-      {/* Career List */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredCareers.length > 0 ? (
           filteredCareers.map((career) => (
             <div
               key={career._id}
-              className="bg-white shadow rounded-lg overflow-hidden hover:shadow-md transition-shadow"
+              className="bg-theme-bg-light shadow rounded-lg overflow-hidden hover:shadow-lg transition-shadow border border-theme-border-DEFAULT"
             >
               <div className="p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-2">{career.title}</h2>
-                <p className="text-gray-600 mb-4 line-clamp-3">{career.description}</p>
+                <h2>{career.title}</h2>
+                <p className="text-theme-text-DEFAULT mb-4 line-clamp-3">{career.description}</p>
                 <div className="mb-4">
-                  <h3 className="text-sm font-medium text-gray-700 mb-1">Key Skills:</h3>
+                  <h3 className="text-sm mb-1">Key Skills:</h3>
                   <div className="flex flex-wrap gap-1">
-                    {career.skills.slice(0, 3).map((skill, index) => (
-                      <span
-                        key={index}
-                        className="bg-primary-50 text-primary-700 text-xs font-medium px-2 py-0.5 rounded-full"
-                      >
-                        {skill}
+                    {career.traits?.skills && Object.entries(career.traits.skills)
+                      .slice(0, 3)
+                      .map(([skill, value]) => (
+                        <span
+                          key={skill}
+                          className="bg-primary-600 text-primary-100 text-xs font-medium px-2 py-0.5 rounded-full"
+                        >
+                          {skill}
+                        </span>
+                      ))}
+                    {career.traits?.skills && Object.keys(career.traits.skills).length > 3 && (
+                      <span className="text-xs text-theme-text-muted">
+                        +{Object.keys(career.traits.skills).length - 3} more
                       </span>
-                    ))}
-                    {career.skills.length > 3 && (
-                      <span className="text-xs text-gray-500">+{career.skills.length - 3} more</span>
                     )}
                   </div>
                 </div>
-                <div className="text-sm text-gray-600 mb-4">
-                  <p><span className="font-medium">Education:</span> {career.education}</p>
-                  <p><span className="font-medium">Avg. Salary:</span> {career.averageSalary}</p>
+                <div className="text-sm text-theme-text-DEFAULT mb-4">
+                  {career.education?.degrees && (
+                    <p>
+                      <span className="font-semibold text-theme-text-light">Education:</span>{' '}
+                      {career.education.degrees[0]}
+                    </p>
+                  )}
                 </div>
                 <Link
                   to={`/careers/${career._id}`}
@@ -190,22 +202,22 @@ const Careers = () => {
           <div className="col-span-full">
             {isSearchingWeb ? (
               <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-600 mx-auto mb-4"></div>
-                <p className="text-gray-600">Searching the web for career information...</p>
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-500 mx-auto mb-4"></div>
+                <p className="text-theme-text-DEFAULT">Searching the web for career information...</p>
               </div>
             ) : webResults.length > 0 ? (
               <div>
-                <h2 className="text-xl font-bold text-gray-900 mb-4">Web Search Results</h2>
+                <h2 className="mb-4">Web Search Results</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {webResults.map((result, index) => (
-                    <div key={index} className="bg-white shadow rounded-lg p-6">
-                      <h3 className="text-lg font-bold text-gray-900 mb-2">{result.title}</h3>
-                      <p className="text-gray-600 mb-4">{result.description}</p>
+                    <div key={index} className="bg-theme-bg-light shadow rounded-lg p-6 border border-theme-border-DEFAULT">
+                      <h3>{result.title}</h3>
+                      <p className="text-theme-text-DEFAULT mb-4">{result.description}</p>
                       <a
                         href={result.link}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-primary-600 hover:text-primary-700 font-medium"
+                        className="text-primary-400 hover:text-primary-300 font-medium"
                       >
                         Learn More
                       </a>
@@ -215,7 +227,7 @@ const Careers = () => {
               </div>
             ) : (
               <div className="text-center py-12">
-                <p className="text-gray-600 mb-4">No careers found matching your criteria.</p>
+                <p className="text-theme-text-DEFAULT mb-4">No careers found matching your criteria.</p>
                 <button
                   onClick={() => {
                     setSearchTerm('');
@@ -232,12 +244,11 @@ const Careers = () => {
         )}
       </div>
 
-      {/* Take Test CTA */}
-      <div className="mt-12 bg-primary-50 rounded-lg p-8 text-center">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">
+      <div className="mt-12 text-center">
+        <h2 className="mb-4">
           Not sure which career is right for you?
         </h2>
-        <p className="text-lg text-gray-600 mb-6">
+        <p className="text-lg text-theme-text-DEFAULT mb-6">
           Take our psychometric test to discover career paths that match your personality,
           interests, and skills.
         </p>

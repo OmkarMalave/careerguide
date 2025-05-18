@@ -1,136 +1,143 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { testAPI } from '../utils/api';
+import { careerCategories } from '../data/questions';
 
 const TestResults = () => {
   const location = useLocation();
-  const [testResult, setTestResult] = useState(location.state?.testResult || null);
-  const [loading, setLoading] = useState(!testResult);
+  const [testResult, setTestResult] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchResults = async () => {
-      if (!testResult) {
-        try {
-          setLoading(true);
+      try {
+        setLoading(true);
+        // First try to get the last test result ID from localStorage
+        const lastTestResultId = localStorage.getItem('lastTestResultId');
+        
+        if (lastTestResultId) {
+          // If we have a last test result ID, fetch that specific result
+          const response = await testAPI.getResult(lastTestResultId);
+          if (response.data && response.data.success) {
+            setTestResult(response.data.data);
+          }
+        } else {
+          // Otherwise, fetch the most recent result
           const response = await testAPI.getResults();
-          setTestResult(response.data.data[0]); // Get the most recent result
-          setLoading(false);
-        } catch (err) {
-          console.error('Error fetching test results:', err);
-          setError('Failed to load test results. Please try again later.');
-          setLoading(false);
+          if (response.data && response.data.success && response.data.data.length > 0) {
+            setTestResult(response.data.data[0]);
+          }
         }
+        setLoading(false);
+      } catch (err) {
+        console.error('Error fetching test results:', err);
+        setError('Failed to load test results. Please try again later.');
+        setLoading(false);
       }
     };
 
     fetchResults();
-  }, [testResult]);
+  }, []);
+
+  console.log('Rendering TestResults component...');
+  console.log('Initial location.state?.testResult:', location.state?.testResult);
+  console.log('Current testResult state before return:', testResult);
+  console.log('Current loading state:', loading);
+  console.log('Current error state:', error);
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
+      <div className="flex justify-center items-center h-64 bg-theme-bg-dark">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="bg-error-light border-l-4 border-error-DEFAULT p-4 text-error-dark">
+          <p>{error}</p>
+        </div>
+        <div className="mt-6 text-center">
+          <Link to="/test" className="btn btn-primary">
+            Take Test Again
+          </Link>
+        </div>
       </div>
     );
   }
 
   if (!testResult) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">Test Results</h1>
-        {error ? (
-          <p className="text-red-600 mb-8">{error}</p>
-        ) : (
-          <p className="text-lg text-gray-600 mb-8">
-            You haven't taken any psychometric tests yet.
-          </p>
-        )}
-        <Link to="/test" className="btn btn-primary">
-          Take the Test
-        </Link>
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <h1 className="text-center mb-8">Test Results</h1>
+        <div className="text-center">
+          <p className="mb-6">No test results found.</p>
+          <Link to="/test" className="btn btn-primary">
+            Take Test
+          </Link>
+        </div>
       </div>
     );
   }
 
-  const renderScoreBar = (score, label) => (
-    <div className="mb-4">
-      <div className="flex justify-between mb-1">
-        <span className="text-sm font-medium text-gray-700">{label}</span>
-        <span className="text-sm font-medium text-gray-700">{score}/10</span>
-      </div>
-      <div className="w-full bg-gray-200 rounded-full h-2.5">
-        <div
-          className="bg-primary-600 h-2.5 rounded-full"
-          style={{ width: `${(score / 10) * 100}%` }}
-        ></div>
-      </div>
-    </div>
-  );
+  console.log('Condition (!testResult || !testResult.scores) is FALSE, proceeding to render results.');
+  const maxPossibleScore = testResult.scores.numberOfQuestionsAnswered 
+    ? testResult.scores.numberOfQuestionsAnswered * 5 
+    : 20 * 5;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Your Test Results</h1>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 bg-theme-bg-dark text-theme-text-DEFAULT">
+      <h1 className="text-3xl font-bold text-theme-text-DEFAULT mb-8 text-center">Your Career Recommendations</h1>
 
-      {/* Scores Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-        {/* Interests */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Interests</h2>
-          {renderScoreBar(testResult.scores.interests.analytical, 'Analytical')}
-          {renderScoreBar(testResult.scores.interests.creative, 'Creative')}
-          {renderScoreBar(testResult.scores.interests.social, 'Social')}
-        </div>
-
-        {/* Personality */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Personality</h2>
-          {renderScoreBar(testResult.scores.personality.structured, 'Structured')}
-          {renderScoreBar(testResult.scores.personality.independent, 'Independent')}
-          {renderScoreBar(testResult.scores.personality.teamwork, 'Teamwork')}
-        </div>
-
-        {/* Skills */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Skills</h2>
-          {renderScoreBar(testResult.scores.skills.technical, 'Technical')}
-          {renderScoreBar(testResult.scores.skills.communication, 'Communication')}
-          {renderScoreBar(testResult.scores.skills.creative, 'Creative')}
-        </div>
-
-        {/* Values */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Values</h2>
-          {renderScoreBar(testResult.scores.values.security, 'Security')}
-          {renderScoreBar(testResult.scores.values.growth, 'Growth')}
-          {renderScoreBar(testResult.scores.values.balance, 'Work-Life Balance')}
-        </div>
-      </div>
-
-      {/* Recommended Careers */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-6">Recommended Careers</h2>
+      <div className="bg-theme-bg-light rounded-lg shadow p-6 mb-8">
+        <h2 className="text-xl font-bold text-theme-text-DEFAULT mb-6">Based on Your Test Results</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {testResult.recommendedCareers.map((career) => (
-            <div key={career._id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">{career.title}</h3>
-              <p className="text-gray-600 mb-4">{career.description}</p>
-              <div className="flex flex-wrap gap-2">
-                {career.skills.map((skill, index) => (
-                  <span
-                    key={index}
-                    className="bg-primary-50 text-primary-700 text-xs font-medium px-2.5 py-0.5 rounded-full"
-                  >
-                    {skill}
-                  </span>
-                ))}
+          {testResult.recommendedCareers.map((career) => {
+            const fullCareer = careerCategories.find(c => c.id === career._id);
+            return (
+              <div key={career._id} className="bg-theme-bg-lighter border border-theme-border rounded-lg p-4 hover:shadow-md transition-shadow">
+                <h3 className="text-lg font-semibold text-theme-text-DEFAULT mb-2">{career.title}</h3>
+                <p className="text-theme-text-light mb-4 text-sm">{career.description}</p>
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {career.skills?.map((skill, index) => (
+                    <span
+                      key={index}
+                      className="bg-primary-700 text-primary-100 text-xs font-medium px-2.5 py-0.5 rounded-full"
+                    >
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+                {fullCareer?.education?.degrees && (
+                  <div className="mt-4">
+                    <h4 className="text-sm font-medium text-theme-text-DEFAULT mb-2">Education Requirements:</h4>
+                    <ul className="text-sm text-theme-text-light list-disc list-inside">
+                      {fullCareer.education.degrees.slice(0, 2).map((degree, index) => (
+                        <li key={index}>{degree}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                <div className="mt-4">
+                  <h4 className="text-sm font-medium mb-2">Match Score: {career.matchScore}%</h4>
+                  <ul className="text-sm text-theme-text-light list-disc list-inside">
+                    {career.matchReasons?.map((reason, index) => (
+                      <li key={index}>{reason}</li>
+                    ))}
+                  </ul>
+                </div>
+                <Link to={`/careers/${career._id}`} className="inline-block mt-4 text-sm text-primary-400 hover:text-primary-300">
+                  Learn More &rarr;
+                </Link>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
-      {/* Action Buttons */}
       <div className="mt-8 flex justify-center space-x-4">
         <Link to="/test" className="btn btn-outline">
           Retake Test

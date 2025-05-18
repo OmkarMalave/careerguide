@@ -1,37 +1,34 @@
 const mongoose = require('mongoose');
 
-const QuestionSchema = new mongoose.Schema({
+const questionSchema = new mongoose.Schema({
   text: {
     type: String,
-    required: [true, 'Please provide a question text'],
+    required: [true, 'Question text is required'],
     trim: true
   },
   category: {
     type: String,
-    required: [true, 'Please provide a category'],
-    enum: ['interests', 'skills', 'personality', 'values'],
-    trim: true
+    required: [true, 'Question category is required'],
+    enum: ['personality', 'interests', 'skills', 'values', 'workStyle']
   },
   options: [{
     text: {
       type: String,
-      required: [true, 'Please provide an option text'],
-      trim: true
+      required: [true, 'Option text is required']
     },
     score: {
-      type: Map,
-      of: Number,
-      default: {}
+      type: Number,
+      required: [true, 'Option score is required'],
+      min: 1,
+      max: 5
     }
   }],
   active: {
     type: Boolean,
     default: true
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
   }
+}, {
+  timestamps: true
 });
 
-module.exports = mongoose.model('Question', QuestionSchema); 
+module.exports = mongoose.model('Question', questionSchema); 

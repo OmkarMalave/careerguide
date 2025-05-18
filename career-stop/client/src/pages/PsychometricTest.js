@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { testAPI } from '../utils/api';
+import { questions, calculateCareerMatch } from '../data/questions';
 
 const PsychometricTest = () => {
   const [questions, setQuestions] = useState([]);
@@ -54,7 +55,8 @@ const PsychometricTest = () => {
     const newAnswers = [...answers];
     newAnswers[currentQuestionIndex] = {
       question: questions[currentQuestionIndex]._id,
-      selectedOption: optionIndex
+      selectedOption: optionIndex,
+      category: questions[currentQuestionIndex].category
     };
     setAnswers(newAnswers);
   };
@@ -71,25 +73,55 @@ const PsychometricTest = () => {
     }
   };
 
-  const handleSubmitTest = async () => {
-    // Check if all questions are answered
-    const unansweredQuestions = answers.findIndex(answer => answer === null);
-    if (unansweredQuestions !== -1) {
-      setError(`Please answer question ${unansweredQuestions + 1} before submitting.`);
-      setCurrentQuestionIndex(unansweredQuestions);
-      return;
-    }
-
+  const handleSubmit = async () => {
     try {
       setSubmitting(true);
+      setError('');
+      
+      // Validate all questions are answered
+      const unansweredQuestions = answers.filter(answer => !answer || answer.selectedOption === undefined);
+      if (unansweredQuestions.length > 0) {
+        setError('Please answer all questions before submitting');
+        setSubmitting(false);
+        return;
+      }
+
+      // Format answers for submission
+      const formattedAnswers = answers.map(answer => ({
+        question: answer.question,
+        selectedOption: answer.selectedOption,
+        category: answer.category
+      }));
+
+      console.log('Submitting test answers:', {
+        answerCount: formattedAnswers.length,
+        educationLevel,
+        answers: formattedAnswers
+      });
+
       const response = await testAPI.submitTest({
-        answers,
+        answers: formattedAnswers,
         educationLevel
       });
-      navigate('/test/results', { state: { testResult: response.data.data } });
-    } catch (err) {
-      console.error('Error submitting test:', err);
-      setError('Failed to submit test. Please try again.');
+
+      console.log('Test submission response:', response);
+
+      if (response.data && response.data.success) {
+        // Store the test result ID in localStorage
+        localStorage.setItem('lastTestResultId', response.data.data._id);
+        // Navigate to results page with the correct path
+        navigate('/test/results');
+      } else {
+        setError(response.data?.message || 'Failed to submit test. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error submitting test:', error);
+      setError(
+        error.response?.data?.message || 
+        error.response?.data?.error || 
+        'Failed to submit test. Please try again.'
+      );
+    } finally {
       setSubmitting(false);
     }
   };
@@ -102,7 +134,7 @@ const PsychometricTest = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
       </div>
     );
   }
@@ -110,8 +142,8 @@ const PsychometricTest = () => {
   if (questions.length === 0) {
     return (
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">Psychometric Test</h1>
-        <p className="text-lg text-gray-600 mb-8">
+        <h1>Psychometric Test</h1>
+        <p className="text-lg text-theme-text-DEFAULT mb-8">
           No questions available at the moment. Please try again later.
         </p>
       </div>
@@ -121,8 +153,8 @@ const PsychometricTest = () => {
   if (showEducationSelection) {
     return (
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h1 className="text-3xl font-extrabold text-gray-900 mb-4 text-center">Select Your Education Level</h1>
-        <p className="text-lg text-gray-700 mb-8 text-center">
+        <h1 className="text-center">Select Your Education Level</h1>
+        <p className="text-lg text-theme-text-DEFAULT mb-8 text-center">
           Please select your current education level to help us provide more relevant career recommendations.
         </p>
 
@@ -130,20 +162,20 @@ const PsychometricTest = () => {
           {educationalLevels.map((level) => (
             <div
               key={level.level}
-              className={`border-2 rounded-lg p-6 cursor-pointer transition-all hover:shadow-md ${
+              className={`border-2 rounded-lg p-6 cursor-pointer transition-all hover:shadow-lg ${
                 educationLevel === level.level
-                  ? 'border-primary-500 bg-primary-50'
-                  : 'border-gray-200 hover:border-primary-300 hover:bg-gray-50'
+                  ? 'border-primary-400 bg-primary-700 ring-2 ring-primary-300'
+                  : 'border-primary-700 hover:border-primary-500 hover:bg-primary-800 bg-theme-bg-light'
               }`}
               onClick={() => handleEducationLevelSelect(level.level)}
             >
-              <h3 className="text-xl font-bold text-gray-900 mb-2">{level.level}</h3>
-              <p className="text-gray-600 mb-4">{level.description}</p>
-              <div className="flex flex-wrap gap-2">
+              <h3 className="text-center mb-2">{level.level}</h3>
+              <p className="text-theme-text-muted mb-4 text-sm">{level.description}</p>
+              <div className="flex flex-wrap gap-2 justify-center">
                 {level.streams.map((stream) => (
                   <span
                     key={stream}
-                    className="bg-primary-50 text-primary-700 text-xs font-medium px-2.5 py-0.5 rounded-full"
+                    className="bg-primary-600 text-primary-100 text-xs font-medium px-2.5 py-0.5 rounded-full"
                   >
                     {stream}
                   </span>
@@ -161,74 +193,70 @@ const PsychometricTest = () => {
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <h1 className="text-3xl font-extrabold text-gray-900 mb-4 text-center">Psychometric Test</h1>
-      <p className="text-lg text-gray-700 mb-8 text-center">
+      <h1 className="text-center">Psychometric Test</h1>
+      <p className="text-lg text-theme-text-DEFAULT mb-8 text-center">
         Answer the following questions to discover career paths that match your
         personality, interests, and skills.
       </p>
 
       {error && (
-        <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 text-red-700 font-medium">
+        <div className="mb-6 bg-error-light border-l-4 border-error-DEFAULT p-4 text-error-dark font-medium">
           <p>{error}</p>
         </div>
       )}
 
-      {/* Progress bar */}
       <div className="mb-2">
-        <div className="flex justify-between text-sm font-medium text-gray-700 mb-1">
+        <div className="flex justify-between text-sm font-medium text-theme-text-DEFAULT mb-1">
           <span>Question {currentQuestionIndex + 1} of {questions.length}</span>
           <span>{Math.round(progress)}% complete</span>
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-2.5 mb-6">
+        <div className="w-full bg-primary-800 rounded-full h-2.5 mb-6">
           <div
-            className="bg-primary-600 h-2.5 rounded-full"
+            className="bg-primary-500 h-2.5 rounded-full transition-all duration-300 ease-out"
             style={{ width: `${progress}%` }}
           ></div>
         </div>
       </div>
 
-      {/* Question card */}
-      <div className="bg-white shadow-lg rounded-lg border border-gray-100 p-8 mb-8">
+      <div className="bg-theme-bg-light shadow-xl rounded-lg border border-primary-700 p-6 sm:p-8 mb-8">
         <div className="mb-6">
-          <span className="inline-block bg-primary-100 text-primary-800 text-sm font-medium px-3 py-1 rounded-full mb-3">
+          <span className="inline-block bg-primary-600 text-primary-100 text-sm font-semibold px-3 py-1 rounded-full mb-3">
             {currentQuestion.category.charAt(0).toUpperCase() + currentQuestion.category.slice(1)}
           </span>
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">{currentQuestion.text}</h2>
+          <h2 className="mb-6">{currentQuestion.text}</h2>
         </div>
 
-        {/* Options */}
         <div className="space-y-4">
           {currentQuestion.options.map((option, index) => (
             <div
               key={index}
-              className={`border-2 rounded-lg p-5 cursor-pointer transition-all hover:shadow-md ${
+              className={`border-2 rounded-lg p-4 sm:p-5 cursor-pointer transition-all hover:shadow-md ${
                 answers[currentQuestionIndex]?.selectedOption === index
-                  ? 'border-primary-500 bg-primary-50'
-                  : 'border-gray-200 hover:border-primary-300 hover:bg-gray-50'
+                  ? 'border-primary-400 bg-primary-700 ring-2 ring-primary-300'
+                  : 'border-primary-700 hover:border-primary-500 hover:bg-primary-800 bg-theme-bg-light'
               }`}
               onClick={() => handleOptionSelect(index)}
             >
               <div className="flex items-center">
                 <div
-                  className={`w-6 h-6 rounded-full border-2 flex items-center justify-center mr-4 ${
+                  className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 flex items-center justify-center mr-3 sm:mr-4 flex-shrink-0 ${
                     answers[currentQuestionIndex]?.selectedOption === index
-                      ? 'border-primary-500 bg-primary-500'
-                      : 'border-gray-300'
+                      ? 'border-primary-400 bg-primary-400'
+                      : 'border-primary-500'
                   }`}
                 >
                   {answers[currentQuestionIndex]?.selectedOption === index && (
-                    <div className="w-2 h-2 rounded-full bg-white"></div>
+                    <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-white"></div>
                   )}
                 </div>
-                <span className="text-lg text-gray-800 font-medium">{option.text}</span>
+                <span className="text-base sm:text-lg text-theme-text-DEFAULT font-medium">{option.text}</span>
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Navigation buttons */}
-      <div className="flex justify-between">
+      <div className="flex justify-between mt-10">
         <button
           onClick={goToPreviousQuestion}
           disabled={currentQuestionIndex === 0}
@@ -246,7 +274,7 @@ const PsychometricTest = () => {
           </button>
         ) : (
           <button
-            onClick={handleSubmitTest}
+            onClick={handleSubmit}
             disabled={submitting || answers.includes(null)}
             className="btn btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
           >
